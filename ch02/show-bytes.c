@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
     printf("calling test_show_bytes\n");  
     test_show_bytes(val);  
     } else {
-        /*  
+        
         printf("calling show_twocomp\n");  
         show_twocomp();  
         printf("Calling simple_show_a\n");  
@@ -159,13 +159,12 @@ int main(int argc, char *argv[])
         string_ueg();  
         printf("Calling string_leg\n");  
         string_leg();  
-        */
-       printf("Calling short_eg\n");
-       short_eg();
-       printf("Calling long_eg\n");
-       long_eg();
-       printf("Calling double_eg\n");
-       double_eg();
+        printf("Calling short_eg\n");
+        short_eg();
+        printf("Calling long_eg\n");
+        long_eg();
+        printf("Calling double_eg\n");
+        double_eg();
     }  
     return 0;  
 }
