@@ -1,11 +1,8 @@
 #include<stdio.h>
-
-int odd_ones(unsigned x)
+int lower_one_mask(int n)
 {
     //todo
-    return 1;
 }
-
 int main(int args, char *argv[])
 {
     
