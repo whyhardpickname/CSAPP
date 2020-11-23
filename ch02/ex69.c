@@ -2,11 +2,8 @@
 
 unsigned rotate_left(unsigned x, int n)
 {
-    unsigned w = sizeof(int) * 8;
-    int z_mask = -!n;
-    unsigned mask = ((2 << (n - 1)) - 1) << (w - n);
-    unsigned n_msb = (x & mask) >> (w - n);
-    return (z_mask & x) | (~z_mask & (x << n) | n_msb);
+    int w = sizeof(int) * 8;
+    return (x >> (w - n)) | (x << n);
 }
 
 int main(int args, char *argv[])
