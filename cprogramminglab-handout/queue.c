@@ -37,20 +37,24 @@ queue_t *q_new()
 void q_free(queue_t *q)
 {
     /* How about freeing the list elements? */
-    if (q != NULL)
+    if (q == NULL)
     {
-      list_ele_t *p1 = q->head;
-      list_ele_t *p2;
-      while (p1 != NULL)
-      {
-        p2 = p1->next;
-        free(p1);
-        p1 = p2;
-      }
-        
-    /* Free queue structure */
-      free(q);
+      return;
     }
+
+    list_ele_t *cur = q->head;
+    list_ele_t *next;
+
+    while (cur != NULL)
+    {
+      next = cur->next;
+      free(cur);
+      cur = next;
+    }
+
+    /* Free queue structure */
+    free(q);
+    
 }
 
 /*
@@ -129,7 +133,7 @@ bool q_insert_tail(queue_t *q, int v)
 bool q_remove_head(queue_t *q, int *vp)
 {
     /* You need to fix up this code. */
-    if (q == NULL || q->head == NULL)
+    if (q == NULL || q->size == 0)
     {
       return false;
     }
@@ -177,19 +181,23 @@ int q_size(queue_t *q)
 void q_reverse(queue_t *q)
 {
     /* You need to write the code for this function */
-    if (q == NULL | q->size != 0)
+    if ((q == NULL) || (q->size < 2))
     {
       return;
     }
     list_ele_t *p1 = q->head;
     list_ele_t *p2 = q->head->next;
     list_ele_t *temp;
+
     while (p2 != NULL)
     {
-      temp = p2;
+      temp = p2->next;
       p2->next = p1;
       p1 = p2;
-      p2 = temp->next;
+      p2 = temp;
     }
-    q->head->next = NULL;
+
+    temp = q->head;
+    q->head = q->tail;
+    q->tail = temp;
 }
