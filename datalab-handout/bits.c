@@ -223,7 +223,8 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 0;
+  //todo
+  return 2;
 }
 //4
 /* 
@@ -235,7 +236,12 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  x |= (x >> 16);
+  x |= (x >> 8);
+  x |= (x >> 4);
+  x |= (x >> 2);
+  x |= (x >> 1);
+  return (x ^ 1) & 1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
