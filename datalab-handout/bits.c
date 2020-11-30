@@ -223,8 +223,10 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  //todo
-  return 2;
+  int same_msb = (x ^ y) & (1 << 31);
+  same_msb = !same_msb;
+  same_msb = ~same_msb + 1;
+  return ((~same_msb) & !(y & (1 << 31))) | (same_msb & !((y + ~x + 1) & (1 << 31)));
 }
 //4
 /* 

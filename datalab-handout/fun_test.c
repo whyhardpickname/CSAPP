@@ -1,0 +1,86 @@
+#include<stdio.h>
+int howManyBits(int x) {
+  x |= x >> 1;
+  x |= x >> 2;
+  x |= x >> 4;
+  x |= x >> 8;
+  x |= x >> 16;
+  int count = 0;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  x >>= 1;
+  count += (x & 1);
+  return count;
+}
+
+int main()
+{
+    printf("non-negative: \n");
+    printf("5\t%d\n", howManyBits(12));
+    printf("10\t%d\n", howManyBits(298));
+    printf("0\t%d\n", howManyBits(1));
+    printf("negative: \n");
+    printf("4\t%d\n", howManyBits(-5));
+    printf("-1\t%d\n", howManyBits(-1));
+    printf("32\t%d\n", howManyBits(0x80000000));
+    return 0;
+}
