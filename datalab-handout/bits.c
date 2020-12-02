@@ -258,81 +258,31 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  int temp = x;
   x ^= (x << 1);
-  x |= (x >> 1);
-  x |= (x >> 2);
-  x |= (x >> 4);
-  x |= (x >> 8);
-  x |= (x >> 16);
-  int count = 0;
 
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  x >>= 1;
-  count += (x & 1);
-  x >>= 1; 
-  count += (x & 1);
-  temp = !temp;
-  temp = ~temp + 1;
-  return (~temp & count) | (temp & 1);
+  int count = 1;
+  int step = 0;
+
+  step = (!!(x >> 16) << 4);
+  count += step;
+  x >>= step;
+
+  step = (!!(x >> 8) << 3);
+  count += step;
+  x >>= step;
+
+  step = (!!(x >> 4) << 2);
+  count += step;
+  x >>= step;
+
+  step = (!!(x >> 2) << 1);
+  count += step;
+  x >>= step;
+
+  step = (!!(x >> 1));
+  count += step;
+  x >>= step;
+  return count;
 }
 //float
 /* 
@@ -347,7 +297,12 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+  unsigned e_mask = (unsigned) (1 << 31) - (unsigned) (1 << 23);
+  unsigned f_mask = (unsigned) (1 << 23) - 1;
+  if ((mask & uf))
+  unsigned exponent = mask &uf;
+  exponent += (1 << 22);
+  return exponent + (uf & ~mask);
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
