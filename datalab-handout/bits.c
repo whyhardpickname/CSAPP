@@ -297,12 +297,21 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  unsigned e_mask = (unsigned) (1 << 31) - (unsigned) (1 << 23);
-  unsigned f_mask = (unsigned) (1 << 23) - 1;
-  if ((mask & uf))
-  unsigned exponent = mask &uf;
-  exponent += (1 << 22);
-  return exponent + (uf & ~mask);
+    unsigned smask = ((1 << 23) - 1);
+    unsigned emask = ((unsigned) (1 << 31) - (1 << 23));
+    unsigned significand = uf & smask;
+    unsigned exponent = uf & emask;
+
+    if (!(exponent ^ emask))
+    {
+        return uf;
+    }
+    else if (!exponent)
+    {
+        
+    }
+    
+    return uf + (1 << 23);
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
