@@ -258,10 +258,10 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  x ^= (x << 1);
-
   int count = 1;
   int step = 0;
+
+  x ^= (x << 1);
 
   step = (!!(x >> 16) << 4);
   count += step;
@@ -297,20 +297,24 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-    unsigned smask = ((1 << 23) - 1);
-    unsigned emask = ((unsigned) (1 << 31) - (1 << 23));
-    unsigned significand = uf & smask;
-    unsigned exponent = uf & emask;
-
-    if (!(exponent ^ emask))
+    unsigned exponent_mask = ((1 << 8) + ~1 + 1);
+    unsigned exponent = (uf >> 23) & exponent_mask;
+    unsigned significant_mask = ((1 << 23) + ~1 + 1);
+    unsigned significant = uf & significant_mask;
+    //非规格化值,阶码值全为0
+    if (!exponent)
+    {
+        significant <<= 1;
+        uf &= ~significant_mask;
+        uf += significant;
+        return uf;
+    }
+    //特殊值,包括无穷大和NaN.阶码值全为1
+    else if (!(exponent ^ exponent_mask))
     {
         return uf;
     }
-    else if (!exponent)
-    {
-        
-    }
-    
+    //规划化值.阶码值不全为0或1.
     return uf + (1 << 23);
 }
 /* 
@@ -326,7 +330,28 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+    unsigned exponent_mask = ((1 << 8) + ~1 + 1);
+    unsigned exponent = (uf >> 23) & exponent_mask;
+
+    unsigned significant_mask = ((1 << 23) + ~1 + 1);
+    unsigned significant = uf & significant_mask;
+    
+    unsigned bias = (1 << 7) + ~1 + 1;
+    unsigned sign = !!(uf & (1 << 31));
+    int E = 0;
+    int result = 0;
+    
+    //特殊值,包括无穷大和NaN.阶码值全为1
+    if (!(exponent ^ exponent_mask))
+    {
+        return 0x80000000u;
+    }
+    //E < bias,即至多0111 1110,则加1后第8位为0
+    if (!((exponent + 1) & (1 << 7)))
+    {
+        return 0;
+    }
+    return uf;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
