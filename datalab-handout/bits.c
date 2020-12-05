@@ -337,9 +337,8 @@ int floatFloat2Int(unsigned uf) {
     unsigned significant = uf & significant_mask;
     
     unsigned bias = (1 << 7) + ~1 + 1;
-    unsigned sign = !!(uf & (1 << 31));
-    int E = 0;
-    int result = 0;
+    //unsigned sign = !!(uf & (1 << 31));
+    int E = exponent - bias;
     
     //特殊值,包括无穷大和NaN.阶码值全为1
     if (!(exponent ^ exponent_mask))
@@ -351,7 +350,24 @@ int floatFloat2Int(unsigned uf) {
     {
         return 0;
     }
-    return uf;
+    //E >= bias
+    //在尾数最高有效位前加上1
+    significant |= (1 << 23);
+    int offset = (23 + ~E + 1);
+    //如果E <= 23,M右移offset位
+    if (offset ^ (1 << 31))
+    {
+        significant >>= offset;
+        return significant;
+    }
+    //E <= 30,M左移offset位
+    offset = (30 + ~E + 1);
+    if (offset ^ (1 << 31))
+    {
+        significant <<= offset;
+        return significant;
+    }
+    return 0x80000000u;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
