@@ -330,44 +330,38 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-    unsigned exponent_mask = ((1 << 8) + ~1 + 1);
-    unsigned exponent = (uf >> 23) & exponent_mask;
-
-    unsigned significant_mask = ((1 << 23) + ~1 + 1);
-    unsigned significant = uf & significant_mask;
+    int sign_mask = 1 << 31;
+    int exponent = (uf & ~sign_mask) >> 23;
+    int significant = uf & ~(sign_mask >> 8);
     
-    unsigned bias = (1 << 7) + ~1 + 1;
-    //unsigned sign = !!(uf & (1 << 31));
+    int bias = 0x7f;
+    int sign = (uf & sign_mask);
     int E = exponent - bias;
-    
-    //特殊值,包括无穷大和NaN.阶码值全为1
-    if (!(exponent ^ exponent_mask))
-    {
-        return 0x80000000u;
-    }
-    //E < bias,即至多0111 1110,则加1后第8位为0
-    if (!((exponent + 1) & (1 << 7)))
+    //尾数最高有效位前补1
+    significant |= (1 << 23);
+    if (E & sign_mask)
     {
         return 0;
     }
-    //E >= bias
-    //在尾数最高有效位前加上1
-    significant |= (1 << 23);
-    int offset = (23 + ~E + 1);
-    //如果E <= 23,M右移offset位
-    if (offset ^ (1 << 31))
+    //E -24 < 0,右移23 - E位
+    if ((E - 24) & sign_mask)
     {
-        significant >>= offset;
-        return significant;
+        significant >>= (23 - E);
     }
-    //E <= 30,M左移offset位
-    offset = (30 + ~E + 1);
-    if (offset ^ (1 << 31))
+    //E < 31,左移E - 23位
+    else if ((E - 31) & sign_mask)
     {
-        significant <<= offset;
-        return significant;
+        significant <<= (E - 23);
     }
-    return 0x80000000u;
+    else
+    {
+        return 0x80000000u;
+    }
+    if (sign)
+    {
+        return -significant;
+    }
+    return significant;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
