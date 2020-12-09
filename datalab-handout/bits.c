@@ -377,5 +377,24 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+    int sign_mask = 1 << 31;
+    int bias = 127;//2^(8 -1) - 1 = 127
+    int E = x;
+
+    //E最小值为阶码数全为0,尾数只有最低有效位在为1,小数点后第23位为1,即-149
+    if ((E & sign_mask) && ((E + 149) & sign_mask))
+    {
+        return 0;
+    }
+    //E阶码数全为0,V = 2^(E + 149) * 2^(-126)
+    else if ((E & sign_mask) && ((E + 126) & sign_mask))
+    {
+        return 1 << (E + 149);
+    }
+    //E最大值为阶码数不全为0,除了最低有效位,尾数全为0,即127
+    else if ((E - 128) & sign_mask)
+    {
+        return (E + bias) << 23;
+    }
+    return 0xff << 23;
 }
