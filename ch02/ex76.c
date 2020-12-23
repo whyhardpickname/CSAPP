@@ -16,7 +16,13 @@ void *calloc(size_t nmenb, size_t size)
     {
         return NULL;
     }
-    
-    void *s = malloc(nmenb * size);
-    memset(s, 0, nmenb);
+
+    int prod = nmenb * size;
+    if (prod / nmenb == size)
+    {
+        void *s = malloc(prod);
+        memset(s, 0, nmenb);
+        return s;
+    }
+    return NULL;
 }
