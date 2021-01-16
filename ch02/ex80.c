@@ -4,29 +4,26 @@ int threefourths(int x);
 
 int main()
 {
-    
+    printf("%d\n", threefourths(4));
+    printf("%d\n", threefourths(-4));
+
     return 0;
 }
 
 /*
-    计算3/4*x不溢出,向零舍入.则需要先除4再乘3.
-    除4等价于向右移两位.设x的最后二位值为l,x = f + l.
-    那么f无论正负都向零舍入,所以只要考虑l的舍入.
-    l如果为负,加上偏差2^k -1再除即可.
+    计算3/4*x不溢出,向零舍入.
+    3/4*x = x/2 + x/4
+    根据最后2位和1位,是否补1有三种情况
+    一,00,补0
+    二
 */
 
 int threefourths(int x)
 {
-    int f = x & ~0x3;
-    int l = x & 0x3;
+    int x2 = x & 0x3;
+    int x1 = (x & 0x1) << 1;
 
-    int w = sizeof(int) << 3;
-    int mask = x >> (w - 1);
-    int bias = mask & (l - 1);
-    int fd4m3 = f >> 2;
-    fd4m3 += fd4m3 << 1;
-
-    int ld4m3 = l >> 2;
-    ld4m3 += ld4m3 << 1;
-    return fd4m3 + ld4m3 + bias;
+    int x_mask = (sizeof(int) << 3) - 1;
+    int bias = x_mask & 0x3;
+    int incr
 }
