@@ -14,13 +14,13 @@ void cond(long a, long *p)
 {
     if (!p)
     {
-        goto L1;
+        goto done;
     }
-    if (a <= *p)
+    if (*p >= a)
     {
-        goto L1;
+        goto done;
     }
     *p = a;
-L1:
+done:
     return;
 }

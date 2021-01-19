@@ -10,13 +10,13 @@ int main()
 
 long test(long x, long y, long z)
 {
-    long val = ;
-    if (){
-        if ()
-            val = ;
+    long val = x + z + z;
+    if (x < -3){
+        if (y < z)
+            val = x * y;
         else
-            val = ;
-    } else if ()
-        val = ;
+            val = y * z;
+    } else if (x > 2)
+        val = x * z;
     return val;
 }
