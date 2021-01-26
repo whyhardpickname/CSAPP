@@ -46,6 +46,7 @@ int bitParity8bit(int x)
 /* 总结
     设2^n = w,w为位长
     则第i阶段有
+    '^'即表示指数也表示重复0,1比特位.
     mask_i = 0b(0^(2^(i-1))1^(2^(i-1)))^(2^(n-i));
     sum_i = sum_(i-1) & maks_i ^ ((sum_(i-1) >> i) & mask_i)
  */
