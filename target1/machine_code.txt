@@ -1,0 +1,241 @@
+Dump of assembler code for function main:
+   0x00000000004011ad <+0>:     push   %r14
+   0x00000000004011af <+2>:     push   %r13
+   0x00000000004011b1 <+4>:     push   %r12
+   0x00000000004011b3 <+6>:     push   %rbp
+   0x00000000004011b4 <+7>:     push   %rbx
+   0x00000000004011b5 <+8>:     mov    %edi,%r12d
+   0x00000000004011b8 <+11>:    mov    %rsi,%rbx
+   0x00000000004011bb <+14>:    mov    $0x401dc5,%esi
+   0x00000000004011c0 <+19>:    mov    $0xb,%edi
+   0x00000000004011c5 <+24>:    callq  0x400d50 <signal@plt>
+   0x00000000004011ca <+29>:    mov    $0x401d77,%esi
+   0x00000000004011cf <+34>:    mov    $0x7,%edi
+   0x00000000004011d4 <+39>:    callq  0x400d50 <signal@plt>
+   0x00000000004011d9 <+44>:    mov    $0x401e13,%esi
+   0x00000000004011de <+49>:    mov    $0x4,%edi
+   0x00000000004011e3 <+54>:    callq  0x400d50 <signal@plt>
+   0x00000000004011e8 <+59>:    mov    $0x402fa5,%ebp
+   0x00000000004011ed <+64>:    cmpl   $0x0,0x2032f4(%rip)        # 0x6044e8 <is_checker>
+   0x00000000004011f4 <+71>:    je     0x401214 <main+103>
+   0x00000000004011f6 <+73>:    mov    $0x401e61,%esi
+   0x00000000004011fb <+78>:    mov    $0xe,%edi
+   0x0000000000401200 <+83>:    callq  0x400d50 <signal@plt>
+   0x0000000000401205 <+88>:    mov    $0x5,%edi
+   0x000000000040120a <+93>:    callq  0x400d10 <alarm@plt>
+   0x000000000040120f <+98>:    mov    $0x402faa,%ebp
+   0x0000000000401214 <+103>:   mov    0x203285(%rip),%rax        # 0x6044a0 <stdin@@GLIBC_2.2.5>
+   0x000000000040121b <+110>:   mov    %rax,0x2032ae(%rip)        # 0x6044d0 <infile>
+   0x0000000000401222 <+117>:   mov    $0x0,%r13d
+   0x0000000000401228 <+123>:   mov    $0x0,%r14d
+   0x000000000040122e <+129>:   jmpq   0x4012f9 <main+332>
+   0x0000000000401233 <+134>:   sub    $0x61,%eax
+   0x0000000000401236 <+137>:   cmp    $0x10,%al
+   0x0000000000401238 <+139>:   ja     0x4012da <main+301>
+   0x000000000040123e <+145>:   movzbl %al,%eax
+   0x0000000000401241 <+148>:   jmpq   *0x402ff0(,%rax,8)
+   0x0000000000401248 <+155>:   mov    (%rbx),%rdi
+   0x000000000040124b <+158>:   callq  0x400fa0 <usage>
+   0x0000000000401250 <+163>:   mov    $0x40326d,%esi
+   0x0000000000401255 <+168>:   mov    0x20324c(%rip),%rdi        # 0x6044a8 <optarg@@GLIBC_2.2.5>
+   0x000000000040125c <+175>:   callq  0x400e00 <fopen@plt>
+   0x0000000000401261 <+180>:   mov    %rax,0x203268(%rip)        # 0x6044d0 <infile>
+   0x0000000000401268 <+187>:   test   %rax,%rax
+   0x000000000040126b <+190>:   jne    0x4012f9 <main+332>
+   0x0000000000401271 <+196>:   mov    0x203230(%rip),%rcx        # 0x6044a8 <optarg@@GLIBC_2.2.5>
+   0x0000000000401278 <+203>:   mov    $0x402fb2,%edx
+   0x000000000040127d <+208>:   mov    $0x1,%esi
+   0x0000000000401282 <+213>:   mov    0x203227(%rip),%rdi        # 0x6044b0 <stderr@@GLIBC_2.2.5>
+   0x0000000000401289 <+220>:   callq  0x400e60 <__fprintf_chk@plt>
+   0x000000000040128e <+225>:   mov    $0x1,%eax
+   0x0000000000401293 <+230>:   jmpq   0x40137c <main+463>
+   0x0000000000401298 <+235>:   mov    $0x10,%edx
+   0x000000000040129d <+240>:   mov    $0x0,%esi
+   0x00000000004012a2 <+245>:   mov    0x2031ff(%rip),%rdi        # 0x6044a8 <optarg@@GLIBC_2.2.5>
+   0x00000000004012a9 <+252>:   callq  0x400e20 <strtoul@plt>
+   0x00000000004012ae <+257>:   mov    %eax,%r14d
+   0x00000000004012b1 <+260>:   jmp    0x4012f9 <main+332>
+   0x00000000004012b3 <+262>:   mov    $0xa,%edx
+   0x00000000004012b8 <+267>:   mov    $0x0,%esi
+   0x00000000004012bd <+272>:   mov    0x2031e4(%rip),%rdi        # 0x6044a8 <optarg@@GLIBC_2.2.5>
+   0x00000000004012c4 <+279>:   callq  0x400d80 <strtol@plt>
+   0x00000000004012c9 <+284>:   mov    %eax,%r13d
+   0x00000000004012cc <+287>:   jmp    0x4012f9 <main+332>
+   0x00000000004012ce <+289>:   movl   $0x0,0x2031b0(%rip)        # 0x604488 <notify>
+   0x00000000004012d8 <+299>:   jmp    0x4012f9 <main+332>
+   0x00000000004012da <+301>:   movsbl %dl,%edx
+   0x00000000004012dd <+304>:   mov    $0x402fcf,%esi
+   0x00000000004012e2 <+309>:   mov    $0x1,%edi
+   0x00000000004012e7 <+314>:   mov    $0x0,%eax
+   0x00000000004012ec <+319>:   callq  0x400df0 <__printf_chk@plt>
+   0x00000000004012f1 <+324>:   mov    (%rbx),%rdi
+   0x00000000004012f4 <+327>:   callq  0x400fa0 <usage>
+   0x00000000004012f9 <+332>:   mov    %rbp,%rdx
+   0x00000000004012fc <+335>:   mov    %rbx,%rsi
+   0x00000000004012ff <+338>:   mov    %r12d,%edi
+   0x0000000000401302 <+341>:   callq  0x400e10 <getopt@plt>
+   0x0000000000401307 <+346>:   mov    %eax,%edx
+   0x0000000000401309 <+348>:   cmp    $0xff,%al
+   0x000000000040130b <+350>:   jne    0x401233 <main+134>
+   0x0000000000401311 <+356>:   mov    $0x0,%esi
+   0x0000000000401316 <+361>:   mov    %r13d,%edi
+   0x0000000000401319 <+364>:   callq  0x40102a <initialize_target>
+   0x000000000040131e <+369>:   cmpl   $0x0,0x2031c3(%rip)        # 0x6044e8 <is_checker>
+   0x0000000000401325 <+376>:   je     0x401351 <main+420>
+   0x0000000000401327 <+378>:   cmp    0x2031b2(%rip),%r14d        # 0x6044e0 <authkey>
+   0x000000000040132e <+385>:   je     0x401351 <main+420>
+   0x0000000000401330 <+387>:   mov    %r14d,%edx
+   0x0000000000401333 <+390>:   mov    $0x402f08,%esi
+   0x0000000000401338 <+395>:   mov    $0x1,%edi
+   0x000000000040133d <+400>:   mov    $0x0,%eax
+   0x0000000000401342 <+405>:   callq  0x400df0 <__printf_chk@plt>
+   0x0000000000401347 <+410>:   mov    $0x0,%eax
+   0x000000000040134c <+415>:   callq  0x401a0b <check_fail>
+   0x0000000000401351 <+420>:   mov    0x20318d(%rip),%edx        # 0x6044e4 <cookie>
+   0x0000000000401357 <+426>:   mov    $0x402fe2,%esi
+   0x000000000040135c <+431>:   mov    $0x1,%edi
+   0x0000000000401361 <+436>:   mov    $0x0,%eax
+   0x0000000000401366 <+441>:   callq  0x400df0 <__printf_chk@plt>
+   0x000000000040136b <+446>:   mov    0x20310e(%rip),%rdi        # 0x604480 <buf_offset>
+   0x0000000000401372 <+453>:   callq  0x401f61 <stable_launch>
+   0x0000000000401377 <+458>:   mov    $0x0,%eax
+   0x000000000040137c <+463>:   pop    %rbx
+   0x000000000040137d <+464>:   pop    %rbp
+   0x000000000040137e <+465>:   pop    %r12
+   0x0000000000401380 <+467>:   pop    %r13
+   0x0000000000401382 <+469>:   pop    %r14
+   0x0000000000401384 <+471>:   retq   
+End of assembler dump.
+
+Dump of assembler code for function test:
+   0x0000000000401968 <+0>:     sub    $0x8,%rsp
+   0x000000000040196c <+4>:     mov    $0x0,%eax
+   0x0000000000401971 <+9>:     callq  0x4017a8 <getbuf>
+   0x0000000000401976 <+14>:    mov    %eax,%edx
+   0x0000000000401978 <+16>:    mov    $0x403188,%esi
+   0x000000000040197d <+21>:    mov    $0x1,%edi
+   0x0000000000401982 <+26>:    mov    $0x0,%eax
+   0x0000000000401987 <+31>:    callq  0x400df0 <__printf_chk@plt>
+   0x000000000040198c <+36>:    add    $0x8,%rsp
+   0x0000000000401990 <+40>:    retq   
+End of assembler dump.
+
+Dump of assembler code for function touch1:
+   0x00000000004017c0 <+0>:     sub    $0x8,%rsp
+   0x00000000004017c4 <+4>:     movl   $0x1,0x202d0e(%rip)        # 0x6044dc <vlevel>
+   0x00000000004017ce <+14>:    mov    $0x4030c5,%edi
+   0x00000000004017d3 <+19>:    callq  0x400cc0 <puts@plt>
+   0x00000000004017d8 <+24>:    mov    $0x1,%edi
+   0x00000000004017dd <+29>:    callq  0x401c8d <validate>
+   0x00000000004017e2 <+34>:    mov    $0x0,%edi
+   0x00000000004017e7 <+39>:    callq  0x400e40 <exit@plt>
+End of assembler dump.
+
+Dump of assembler code for function getbuf:
+   0x00000000004017a8 <+0>:     sub    $0x28,%rsp
+   0x00000000004017ac <+4>:     mov    %rsp,%rdi
+   0x00000000004017af <+7>:     callq  0x401a40 <Gets>
+   0x00000000004017b4 <+12>:    mov    $0x1,%eax
+   0x00000000004017b9 <+17>:    add    $0x28,%rsp
+   0x00000000004017bd <+21>:    retq   
+End of assembler dump.
+
+Dump of assembler code for function touch2:
+   0x00000000004017ec <+0>:     sub    $0x8,%rsp
+   0x00000000004017f0 <+4>:     mov    %edi,%edx
+   0x00000000004017f2 <+6>:     movl   $0x2,0x202ce0(%rip)        # 0x6044dc <vlevel>
+   0x00000000004017fc <+16>:    cmp    0x202ce2(%rip),%edi        # 0x6044e4 <cookie>
+   0x0000000000401802 <+22>:    jne    0x401824 <touch2+56>
+   0x0000000000401804 <+24>:    mov    $0x4030e8,%esi
+   0x0000000000401809 <+29>:    mov    $0x1,%edi
+   0x000000000040180e <+34>:    mov    $0x0,%eax
+   0x0000000000401813 <+39>:    callq  0x400df0 <__printf_chk@plt>
+   0x0000000000401818 <+44>:    mov    $0x2,%edi
+   0x000000000040181d <+49>:    callq  0x401c8d <validate>
+   0x0000000000401822 <+54>:    jmp    0x401842 <touch2+86>
+   0x0000000000401824 <+56>:    mov    $0x403110,%esi
+   0x0000000000401829 <+61>:    mov    $0x1,%edi
+   0x000000000040182e <+66>:    mov    $0x0,%eax
+   0x0000000000401833 <+71>:    callq  0x400df0 <__printf_chk@plt>
+   0x0000000000401838 <+76>:    mov    $0x2,%edi
+   0x000000000040183d <+81>:    callq  0x401d4f <fail>
+   0x0000000000401842 <+86>:    mov    $0x0,%edi
+   0x0000000000401847 <+91>:    callq  0x400e40 <exit@plt>
+End of assembler dump.
+
+Dump of assembler code for function touch3:
+   0x00000000004018fa <+0>:     push   %rbx
+   0x00000000004018fb <+1>:     mov    %rdi,%rbx
+   0x00000000004018fe <+4>:     movl   $0x3,0x202bd4(%rip)        # 0x6044dc <vlevel>
+   0x0000000000401908 <+14>:    mov    %rdi,%rsi
+   0x000000000040190b <+17>:    mov    0x202bd3(%rip),%edi        # 0x6044e4 <cookie>
+   0x0000000000401911 <+23>:    callq  0x40184c <hexmatch>
+   0x0000000000401916 <+28>:    test   %eax,%eax
+   0x0000000000401918 <+30>:    je     0x40193d <touch3+67>
+   0x000000000040191a <+32>:    mov    %rbx,%rdx
+   0x000000000040191d <+35>:    mov    $0x403138,%esi
+   0x0000000000401922 <+40>:    mov    $0x1,%edi
+   0x0000000000401927 <+45>:    mov    $0x0,%eax
+   0x000000000040192c <+50>:    callq  0x400df0 <__printf_chk@plt>
+   0x0000000000401931 <+55>:    mov    $0x3,%edi
+   0x0000000000401936 <+60>:    callq  0x401c8d <validate>
+   0x000000000040193b <+65>:    jmp    0x40195e <touch3+100>
+   0x000000000040193d <+67>:    mov    %rbx,%rdx
+   0x0000000000401940 <+70>:    mov    $0x403160,%esi
+   0x0000000000401945 <+75>:    mov    $0x1,%edi
+   0x000000000040194a <+80>:    mov    $0x0,%eax
+   0x000000000040194f <+85>:    callq  0x400df0 <__printf_chk@plt>
+   0x0000000000401954 <+90>:    mov    $0x3,%edi
+   0x0000000000401959 <+95>:    callq  0x401d4f <fail>
+   0x000000000040195e <+100>:   mov    $0x0,%edi
+   0x0000000000401963 <+105>:   callq  0x400e40 <exit@plt>
+End of assembler dump.
+
+Dump of assembler code for function hexmatch:
+   0x000000000040184c <+0>:     push   %r12
+   0x000000000040184e <+2>:     push   %rbp
+   0x000000000040184f <+3>:     push   %rbx
+   0x0000000000401850 <+4>:     add    $0xffffffffffffff80,%rsp
+   0x0000000000401854 <+8>:     mov    %edi,%r12d
+   0x0000000000401857 <+11>:    mov    %rsi,%rbp
+   0x000000000040185a <+14>:    mov    %fs:0x28,%rax
+   0x0000000000401863 <+23>:    mov    %rax,0x78(%rsp)
+   0x0000000000401868 <+28>:    xor    %eax,%eax
+   0x000000000040186a <+30>:    callq  0x400db0 <random@plt>
+   0x000000000040186f <+35>:    mov    %rax,%rcx
+   0x0000000000401872 <+38>:    movabs $0xa3d70a3d70a3d70b,%rdx
+   0x000000000040187c <+48>:    imul   %rdx
+   0x000000000040187f <+51>:    add    %rcx,%rdx
+   0x0000000000401882 <+54>:    sar    $0x6,%rdx
+   0x0000000000401886 <+58>:    mov    %rcx,%rax
+   0x0000000000401889 <+61>:    sar    $0x3f,%rax
+   0x000000000040188d <+65>:    sub    %rax,%rdx
+   0x0000000000401890 <+68>:    lea    (%rdx,%rdx,4),%rax
+   0x0000000000401894 <+72>:    lea    (%rax,%rax,4),%rax
+   0x0000000000401898 <+76>:    shl    $0x2,%rax
+   0x000000000040189c <+80>:    sub    %rax,%rcx
+   0x00000000004018a3 <+87>:    mov    %r12d,%r8d
+   0x00000000004018a6 <+90>:    mov    $0x4030e2,%ecx
+   0x00000000004018ab <+95>:    mov    $0xffffffffffffffff,%rdx
+   0x00000000004018b2 <+102>:   mov    $0x1,%esi
+   0x00000000004018b7 <+107>:   mov    %rbx,%rdi
+   0x00000000004018ba <+110>:   mov    $0x0,%eax
+   0x00000000004018bf <+115>:   callq  0x400e70 <__sprintf_chk@plt>
+   0x00000000004018c4 <+120>:   mov    $0x9,%edx
+   0x00000000004018c9 <+125>:   mov    %rbx,%rsi
+   0x00000000004018cc <+128>:   mov    %rbp,%rdi
+   0x00000000004018cf <+131>:   callq  0x400ca0 <strncmp@plt>
+   0x00000000004018d4 <+136>:   test   %eax,%eax
+   0x00000000004018d6 <+138>:   sete   %al
+   0x00000000004018d9 <+141>:   movzbl %al,%eax
+   0x00000000004018dc <+144>:   mov    0x78(%rsp),%rsi
+   0x00000000004018e1 <+149>:   xor    %fs:0x28,%rsi
+   0x00000000004018ea <+158>:   je     0x4018f1 <hexmatch+165>
+   0x00000000004018ec <+160>:   callq  0x400ce0 <__stack_chk_fail@plt>
+   0x00000000004018f1 <+165>:   sub    $0xffffffffffffff80,%rsp
+   0x00000000004018f5 <+169>:   pop    %rbx
+   0x00000000004018f6 <+170>:   pop    %rbp
+   0x00000000004018f7 <+171>:   pop    %r12
+   0x00000000004018f9 <+173>:   retq   
+End of assembler dump.
+
