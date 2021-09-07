@@ -162,39 +162,21 @@ int main(int argc, char **argv) {
  */
 void eval(char *cmdline) { 
     
+    
     char *argv[MAXARGS];//命令行参数数组
-    char buf[MAXLINE];//命令行
-    int bg;//后台运行标志
-    pid_t pid;//进程id
-
-    //调用parseline处理cmdline，并赋值execve的参数argv
-    //接收parseline返回值
-    bg = parseline(cmdline, argv);
+    // int bg; //后台运行
+    //调用parseline处理cmdline，获得命令行参数argv
+    parseline(cmdline, argv);
     //如果cmdline为空，直接返回
     if (argv[0] == NULL) {
       return;
     }
-    //如果cmdline不是内置命令
+    //如果cmdline是内置命令,直接执行.
     if (!builtin_cmd(argv)) {
-      //创建子进程
-      if ((pid = fork()) == 0) {
-        //如果在子进程内，使用execve执行命令。判断返回值是否异常，是输出错误。
-        if (execve(argv[0], argv, environ) < 0) {
-          printf("%s: Commond not found.\n", argv[0]);
-          exit(0);
-        }
-      }
-      //如果在父进程内，判断作业是否是前台，是等待其终止。不是直接输出进程信息
-      if (!bg) {
-        int status;
-        if (waitpid(pid, &status, 0) < 0) {
-          unix_error("waitfg: waitbg error.");
-        }
-        else {
-          printf("%d %s", pid, cmdline);
-        }
-      }
+      //不是内置命令，在前台加载运行程序
+      execve(argv[0], argv, environ);
     }
+    
     //如果cmdline是内置命令，直接返回
     return; 
 }
@@ -258,14 +240,11 @@ int parseline(const char *cmdline, char **argv) {
  *    it immediately.
  */
 int builtin_cmd(char **argv) { 
-
+  //如果是内置命令quit 直接退出
   if (!strcmp(argv[0], "quit")) {
     exit(0);
   }
-  
-  if (!strcmp(argv[0], "&")) {
-    return 1;
-  }
+
   /* not a builtin command */ 
   return 0; 
 }
