@@ -164,17 +164,40 @@ void eval(char *cmdline) {
     
     
     char *argv[MAXARGS];//命令行参数数组
-    // int bg; //后台运行
-    //调用parseline处理cmdline，获得命令行参数argv
-    parseline(cmdline, argv);
+    int bg; //后台运行
+    pid_t pid; //子进程id
+    //调用parseline处理cmdline，获得命令行参数argv,返回是否后台运行
+    bg = parseline(cmdline, argv);
     //如果cmdline为空，直接返回
     if (argv[0] == NULL) {
       return;
     }
     //如果cmdline是内置命令,直接执行.
     if (!builtin_cmd(argv)) {
-      //不是内置命令，在前台加载运行程序
-      execve(argv[0], argv, environ);
+
+      //不是内置命令，创建分支
+      if ((pid = fork()) == 0) { //在子进程中
+        //加载运行程序
+        if (execve(argv[0], argv, environ) < 0) { //execve返回-1表示执行失败
+          printf("%s: Commond not found.\n", argv[0]);
+          exit(0);
+        }
+      }
+
+      //如果是前台运行，父进程等待子进程运行结束
+      if (!bg) {
+        int status;
+        if (waitpid(pid, &status, 0) < 0) {
+          unix_error("waitfg: waitpid error");
+        }
+      }
+      else {//如果是后台运行
+        //TODO
+        //添加作业到作业列表
+        // addjob(jobs, pid, BG, cmdline);
+        //输出作业信息
+        printf("[%d] (%d) %s", getjobjid, pid, cmdline);
+      }
     }
     
     //如果cmdline是内置命令，直接返回
@@ -245,6 +268,10 @@ int builtin_cmd(char **argv) {
     exit(0);
   }
 
+  //如果内置命令是jobs，列出所有后台运行的作业
+  if (!strcmp(argv[0], "jobs")) {
+    //TODO
+  }
   /* not a builtin command */ 
   return 0; 
 }
@@ -270,7 +297,10 @@ void waitfg(pid_t pid) { return; }
  *     available zombie children, but doesn't wait for any other
  *     currently running children to terminate.
  */
-void sigchld_handler(int sig) { return; }
+void sigchld_handler(int sig) { 
+
+  return; 
+}
 
 /*
  * sigint_handler - The kernel sends a SIGINT to the shell whenver the
