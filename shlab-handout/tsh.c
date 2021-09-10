@@ -166,6 +166,11 @@ void eval(char *cmdline) {
     char *argv[MAXARGS];//命令行参数数组
     int bg; //后台运行
     pid_t pid; //子进程id
+    sigset_t mask_all, mask_one, prev_mask;
+    Sigfillset(&mask_all);
+    Sigemptyset(&mask_one)
+    Sigaddset(&mask_one, SIGCHLD);
+
     //调用parseline处理cmdline，获得命令行参数argv,返回是否后台运行
     bg = parseline(cmdline, argv);
     //如果cmdline为空，直接返回
@@ -174,9 +179,10 @@ void eval(char *cmdline) {
     }
     //如果cmdline是内置命令,直接执行.
     if (!builtin_cmd(argv)) {
-
       //不是内置命令，创建分支
+      Sigprocmask(SIG_BLOCK, &mask_one, &prev_mask);//父进程阻塞sigchild
       if ((pid = fork()) == 0) { //在子进程中
+        Sigprocmask(SIG_SETMASK, &prev_mask, NULL); //子进程解除sigchild
         //加载运行程序
         if (execve(argv[0], argv, environ) < 0) { //execve返回-1表示执行失败
           printf("%s: Commond not found.\n", argv[0]);
@@ -184,19 +190,26 @@ void eval(char *cmdline) {
         }
       }
 
+      //添加作业到作业列表
+      //阻塞所有信号
+      Sigprocmask(SIG_BLOCK, &mask_all, &prev_mask);
+    
+      int state = bg ? BG : FG;
+      addjob(jobs, pid, state, cmdline);
+  
+      //恢复之前信号
+      Sigprocmask(SIG_SETMASK, &prev_mask, NULL);  
       //如果是前台运行，父进程等待子进程运行结束
       if (!bg) {
-        int status;
-        if (waitpid(pid, &status, 0) < 0) {
+        if (waitpid(pid, NULL, 0) < 0) {
           unix_error("waitfg: waitpid error");
         }
+        //删除作业
+        deletejob(jobs, pid);
       }
       else {//如果是后台运行
-        //TODO
-        //添加作业到作业列表
-        // addjob(jobs, pid, BG, cmdline);
         //输出作业信息
-        printf("[%d] (%d) %s", getjobjid, pid, cmdline);
+        printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
       }
     }
     
@@ -268,9 +281,10 @@ int builtin_cmd(char **argv) {
     exit(0);
   }
 
-  //如果内置命令是jobs，列出所有后台运行的作业
+  //如果内置命令是jobs，列出所有后台运行的作业,返回1
   if (!strcmp(argv[0], "jobs")) {
-    //TODO
+    listjobs(jobs);
+    return 1;
   }
   /* not a builtin command */ 
   return 0; 
@@ -298,7 +312,25 @@ void waitfg(pid_t pid) { return; }
  *     currently running children to terminate.
  */
 void sigchld_handler(int sig) { 
+  //保存errno
+  int olderrno = errno;
+  sigset_t mask_all, prev_all;
+  pid_t pid;
+  //回收子进程
+  Sigfillset(&mask_all);
+  while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
+    //阻塞所有信号
+    Sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+    deletejob(pid);
+    //恢复之前信号
+    Sigprocmask(SIG_SETMASK, &prev_all, NULL);
 
+  }
+  if (errrno != ECHILD) {
+    Sio_error("waitpid error");
+  }
+  //恢复errno
+  errno = olderrno;
   return; 
 }
 
@@ -307,7 +339,12 @@ void sigchld_handler(int sig) {
  *    user types ctrl-c at the keyboard.  Catch it and send it along
  *    to the foreground job.
  */
-void sigint_handler(int sig) { return; }
+void sigint_handler(int sig) { 
+  pid_t pid = fgpid(jobs);
+  printf("Job [%d] (%d) terminated by signal 2\n", pid2jid(pid), pid);
+  deletejob(jobs, pid);
+  return;
+}
 
 /*
  * sigtstp_handler - The kernel sends a SIGTSTP to the shell whenever
