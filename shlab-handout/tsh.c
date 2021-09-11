@@ -167,9 +167,9 @@ void eval(char *cmdline) {
     int bg; //后台运行
     pid_t pid; //子进程id
     sigset_t mask_all, mask_one, prev_mask;
-    Sigfillset(&mask_all);
-    Sigemptyset(&mask_one)
-    Sigaddset(&mask_one, SIGCHLD);
+    sigfillset(&mask_all);
+    sigemptyset(&mask_one);
+    sigaddset(&mask_one, SIGCHLD);
 
     //调用parseline处理cmdline，获得命令行参数argv,返回是否后台运行
     bg = parseline(cmdline, argv);
@@ -180,9 +180,9 @@ void eval(char *cmdline) {
     //如果cmdline是内置命令,直接执行.
     if (!builtin_cmd(argv)) {
       //不是内置命令，创建分支
-      Sigprocmask(SIG_BLOCK, &mask_one, &prev_mask);//父进程阻塞sigchild
+      sigprocmask(SIG_BLOCK, &mask_one, &prev_mask);//父进程阻塞sigchild
       if ((pid = fork()) == 0) { //在子进程中
-        Sigprocmask(SIG_SETMASK, &prev_mask, NULL); //子进程解除sigchild
+        sigprocmask(SIG_SETMASK, &prev_mask, NULL); //子进程解除sigchild
         //加载运行程序
         if (execve(argv[0], argv, environ) < 0) { //execve返回-1表示执行失败
           printf("%s: Commond not found.\n", argv[0]);
@@ -192,13 +192,13 @@ void eval(char *cmdline) {
 
       //添加作业到作业列表
       //阻塞所有信号
-      Sigprocmask(SIG_BLOCK, &mask_all, &prev_mask);
+      sigprocmask(SIG_BLOCK, &mask_all, NULL);
     
       int state = bg ? BG : FG;
       addjob(jobs, pid, state, cmdline);
   
       //恢复之前信号
-      Sigprocmask(SIG_SETMASK, &prev_mask, NULL);  
+      sigprocmask(SIG_SETMASK, &prev_mask, NULL);  
       //如果是前台运行，父进程等待子进程运行结束
       if (!bg) {
         if (waitpid(pid, NULL, 0) < 0) {
@@ -317,18 +317,18 @@ void sigchld_handler(int sig) {
   sigset_t mask_all, prev_all;
   pid_t pid;
   //回收子进程
-  Sigfillset(&mask_all);
+  sigfillset(&mask_all);
   while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
     //阻塞所有信号
-    Sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
-    deletejob(pid);
+    sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+    deletejob(jobs, pid);
     //恢复之前信号
-    Sigprocmask(SIG_SETMASK, &prev_all, NULL);
+    sigprocmask(SIG_SETMASK, &prev_all, NULL);
 
   }
-  if (errrno != ECHILD) {
-    Sio_error("waitpid error");
-  }
+  // if (errno != ECHILD) {
+  //   unix_error("waitpid error");
+  // }
   //恢复errno
   errno = olderrno;
   return; 
@@ -340,10 +340,27 @@ void sigchld_handler(int sig) {
  *    to the foreground job.
  */
 void sigint_handler(int sig) { 
-  pid_t pid = fgpid(jobs);
-  printf("Job [%d] (%d) terminated by signal 2\n", pid2jid(pid), pid);
-  deletejob(jobs, pid);
-  return;
+  //保存errno
+  int olderrno = errno;
+  sigset_t mask_all, prev_all;
+  pid_t pid;
+  //回收子进程
+  sigfillset(&mask_all);
+  while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
+    //阻塞所有信号
+    sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+    printf("Job [%d] (%d) terminated by signal 2\n", pid2jid(pid), pid);
+    deletejob(jobs, pid);
+    //恢复之前信号
+    sigprocmask(SIG_SETMASK, &prev_all, NULL);
+
+  }
+  if (errno != ECHILD) {
+    unix_error("waitpid error");
+  }
+  //恢复errno
+  errno = olderrno;
+  return; 
 }
 
 /*
