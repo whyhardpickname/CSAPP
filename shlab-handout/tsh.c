@@ -182,6 +182,11 @@ void eval(char *cmdline) {
       //不是内置命令，创建分支
       sigprocmask(SIG_BLOCK, &mask_one, &prev_mask);//父进程阻塞sigchild
       if ((pid = fork()) == 0) { //在子进程中
+        // 改进程组与自己pid一样
+        if (setpgid(0, 0) < 0) {
+          unix_error("SETPGID ERROR");
+          exit(0);
+        }
         sigprocmask(SIG_SETMASK, &prev_mask, NULL); //子进程解除sigchild
         //加载运行程序
         if (execve(argv[0], argv, environ) < 0) { //execve返回-1表示执行失败
@@ -201,11 +206,7 @@ void eval(char *cmdline) {
       sigprocmask(SIG_SETMASK, &prev_mask, NULL);  
       //如果是前台运行，父进程等待子进程运行结束
       if (!bg) {
-        if (waitpid(pid, NULL, 0) < 0) {
-          unix_error("waitfg: waitpid error");
-        }
-        //删除作业
-        deletejob(jobs, pid);
+        waitfg(pid);
       }
       else {//如果是后台运行
         //输出作业信息
@@ -286,6 +287,11 @@ int builtin_cmd(char **argv) {
     listjobs(jobs);
     return 1;
   }
+  
+  if (!strcmp(argv[0],"bg") || !strcmp(argv[0],"fg")) {
+    do_bgfg(argv);
+    return 1;
+  }
   /* not a builtin command */ 
   return 0; 
 }
@@ -293,12 +299,44 @@ int builtin_cmd(char **argv) {
 /*
  * do_bgfg - Execute the builtin bg and fg commands
  */
-void do_bgfg(char **argv) { return; }
+void do_bgfg(char **argv) { 
+  int prefix = argv[1][0];
+  pid_t pid;
+  int jid; //
+  struct job_t *job_ptr;
+  if (prefix == '%') {
+    argv[1][0] = ' ';
+    jid = atoi(argv[1]);
+    job_ptr = getjobjid(jobs, jid);
+    
+  }
+  else {
+    pid = atoi(argv[1]);
+    job_ptr = getjobpid(jobs, pid);
+  }
+
+  pid = job_ptr->pid;
+  kill(-pid, SIGCONT);
+  if (!strcmp(argv[0],"fg")) {
+    waitfg(pid);
+  }
+  else {
+    printf("[%d] (%d) %s", pid2jid(pid), pid, job_ptr->cmdline);
+  }
+  return; 
+}
 
 /*
  * waitfg - Block until process pid is no longer the foreground process
  */
-void waitfg(pid_t pid) { return; }
+void waitfg(pid_t pid) { 
+  sigset_t mask_temp;
+  sigemptyset(&mask_temp);
+  while (pid == fgpid(jobs)) {
+    sigsuspend(&mask_temp);
+  }
+  return; 
+}
 
 /*****************
  * Signal handlers
@@ -316,20 +354,30 @@ void sigchld_handler(int sig) {
   int olderrno = errno;
   sigset_t mask_all, prev_all;
   pid_t pid;
-  //回收子进程
+  
+  int status;
   sigfillset(&mask_all);
-  while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
-    //阻塞所有信号
-    sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
-    deletejob(jobs, pid);
-    //恢复之前信号
-    sigprocmask(SIG_SETMASK, &prev_all, NULL);
-
+  while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0) {
+    if (WIFEXITED(status)) {//正常退出
+      sigprocmask(SIG_BLOCK, &mask_all, &prev_all); //阻塞所有信号
+      deletejob(jobs, pid);
+      sigprocmask(SIG_SETMASK, &prev_all, NULL); //恢复之前信号
+    }
+    else if (WIFSIGNALED(status)) {//被信号退出
+      struct job_t *job_ptr = getjobpid(jobs, pid);
+      sigprocmask(SIG_BLOCK, &mask_all, &prev_all); //阻塞所有信号
+      printf("Job [%d] (%d) terminated by signal %d\n",job_ptr->jid,job_ptr->pid,WTERMSIG(status));
+      deletejob(jobs, pid);
+      sigprocmask(SIG_SETMASK, &prev_all, NULL); //恢复之前信号
+    }
+    else {//中止
+      struct job_t *job_ptr = getjobpid(jobs,pid);
+      sigprocmask(SIG_BLOCK,&mask_all,&prev_all);
+      printf("Job [%d] (%d) stopped by signal %d\n",job_ptr->jid,job_ptr->pid,WSTOPSIG(status));
+      job_ptr->state= ST;
+      sigprocmask(SIG_SETMASK,&prev_all,NULL);
+    }
   }
-  // if (errno != ECHILD) {
-  //   unix_error("waitpid error");
-  // }
-  //恢复errno
   errno = olderrno;
   return; 
 }
@@ -342,23 +390,10 @@ void sigchld_handler(int sig) {
 void sigint_handler(int sig) { 
   //保存errno
   int olderrno = errno;
-  sigset_t mask_all, prev_all;
-  pid_t pid;
-  //回收子进程
-  sigfillset(&mask_all);
-  while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
-    //阻塞所有信号
-    sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
-    printf("Job [%d] (%d) terminated by signal 2\n", pid2jid(pid), pid);
-    deletejob(jobs, pid);
-    //恢复之前信号
-    sigprocmask(SIG_SETMASK, &prev_all, NULL);
-
+  pid_t pid = fgpid(jobs);
+  if (pid != 0) {
+    kill(-pid, sig);
   }
-  if (errno != ECHILD) {
-    unix_error("waitpid error");
-  }
-  //恢复errno
   errno = olderrno;
   return; 
 }
@@ -368,7 +403,17 @@ void sigint_handler(int sig) {
  *     the user types ctrl-z at the keyboard. Catch it and suspend the
  *     foreground job by sending it a SIGTSTP.
  */
-void sigtstp_handler(int sig) { return; }
+void sigtstp_handler(int sig) { 
+  //保存errno
+  int olderrno = errno;
+  pid_t pid = fgpid(jobs);
+
+  if (pid) {
+    kill(-pid, sig);  
+  }
+  errno = olderrno;
+  return; 
+}
 
 /*********************
  * End signal handlers
