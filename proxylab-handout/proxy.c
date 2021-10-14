@@ -8,13 +8,12 @@
 static const char *user_agent_hdr =
     "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 "
     "Firefox/10.0.3\r\n";
+static const char *conn_hdr = "Connection: close\r\n";
+static const char *prox_hdr = "Proxy-Connection: close\r\n";
 
 void doit(int fd);
-void read_requesthdrs(rio_t *rp);
+void create_requesthdrs(rio_t *rp, char *request, char *hostname, char *port);
 int parse_uri(char *uri, char *hostname, char *port, char *path);
-void get_filetype(char *filename, char *filetype);
-void serve_static(int fd, char *filename, int filesize);
-void serve_dynamic(int fd, char *filename, char *cgiargs);
 void clienterror(int fd, char *cause, char *errnum, char *shortmsg, char *longmsg);
 
 int main(int argc, char *argv[]) {
@@ -25,7 +24,7 @@ int main(int argc, char *argv[]) {
 
   /* 检查命令行参数 */
   if (argc != 2) {
-    fprintf(stderr, "usage: %s <port>\n", argv[1]);
+    fprintf(stderr, "usage: %s <port>\n", argv[0]);
     exit(1);
   }
 
@@ -33,8 +32,7 @@ int main(int argc, char *argv[]) {
   while (1) {
     clientlen = sizeof(clientaddr);
     connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-    Getnameinfo((SA *)&clientaddr, clientlen, hostname, MAXLINE, port, MAXLINE,
-                0);
+    Getnameinfo((SA *)&clientaddr, clientlen, hostname, MAXLINE, port, MAXLINE, 0);
     printf("Accept connection from (%s, %s)\n", hostname, port);
     doit(connfd);
     Close(connfd);
@@ -44,69 +42,79 @@ int main(int argc, char *argv[]) {
 void doit(int fd) {
 
   int is_valid, clientfd, n;
-  struct stat sbuf;
   char buf[MAXLINE], method[MAXLINE], uri[MAXLINE], version[MAXLINE];
   char hostname[MAXLINE], port[MAXLINE], path[MAXLINE];
-  char url[MAXLINE], request_headers[MAXLINE], forward_buf[MAXLINE];
-  rio_t rio, rio_server;
+  char request[MAXLINE], hdrs[MAXLINE], forward_buf[MAXLINE];
+  rio_t rio_client, rio_server;
 
   /* 读取请求行和请求头 */
-  rio_readinitb(&rio, fd);
-  rio_readlineb(&rio, buf, MAXLINE);
-  printf("Request headers:\n");
-  printf("%s", buf);
+  Rio_readinitb(&rio_client, fd);
+  Rio_readlineb(&rio_client, buf, MAXLINE);
   sscanf(buf, "%s %s %s", method, uri, version);
   if (strcasecmp("GET", method)) {
     clienterror(fd, method, "501", "Not implemented",
                 "Tiny does not implement this method");
     return;
   }
-  read_requesthdrs(&rio);
 
   /* 解析GET request的uri */
   is_valid = parse_uri(uri, hostname, port, path);
 
   if (is_valid) {
     clientfd = Open_clientfd(hostname, port);
-    //发送uri
-    sprintf(url, "%s %s HTTP/1.0\r\n\r\n", method, path);
-    Rio_writen(clientfd, url, sizeof(url));
-    //发送请求头
-    sprintf(request_headers, "Host: %s\r\n", hostname);
-    sprintf(request_headers, "%s", user_agent_hdr);
-    sprintf(request_headers, "Connection: close\r\n");
-    sprintf(request_headers, "Proxy-Connection: close\r\n");
-    Rio_writen(clientfd, request_headers, sizeof(request_headers));
+    //添加方法，路径和协议
+    sprintf(request, "%s %s HTTP/1.0\r\n", method, path);
+    //添加请求头
+    create_requesthdrs(&rio_client, request, hostname, port);
+    //发送请求
+    Rio_writen(clientfd, request, sizeof(request));
     //转发读取内容
     Rio_readinitb(&rio_server, clientfd);
     while((n = rio_readnb(&rio_server, forward_buf, MAXLINE)) >= 0) {
       Rio_writen(fd, forward_buf, n);
     }
-
   }
   else {
     clienterror(fd, uri, "400", "Bad Request", "invalid hostname or port.");
   }
 }
 
-void read_requesthdrs(rio_t *rp) {
-  
+void create_requesthdrs(rio_t *rp, char *request, char *hostname, char *port) {  
   char buf[MAXLINE];
 
-  Rio_readlineb(rp, buf, MAXLINE);
-  while (strcmp(buf, "\r\n")) {
-    Rio_readlineb(rp, buf, MAXLINE);
-    printf("%s", buf);
+  while (Rio_readlineb(rp, buf, MAXLINE) > 0) {
+    if (!strcmp(buf, "\r\n")) break;
+    if (strstr(buf,"Host:") != NULL) continue;
+    if (strstr(buf,"User-Agent:") != NULL) continue;
+    if (strstr(buf,"Connection:") != NULL) continue;
+    if (strstr(buf,"Proxy-Connection:") != NULL) continue;
+
+    sprintf(request, "%s%s", request, buf);
   }
+
+  sprintf(request, "%sHost: %s:%s\r\n", request, hostname, port);
+  sprintf(request, "%s%s", request, user_agent_hdr);
+  sprintf(request, "%s%s", request, conn_hdr);
+  sprintf(request, "%s%s", request, prox_hdr);
+  sprintf(request, "%s\r\n", request);
 }
 
 int parse_uri(char *uri, char *hostname, char *port, char *path) {
+  char temp[MAXLINE];
+  if (sscanf(uri, "http://%[^/]%s", temp, path) != 2) {
+    return 0;
+  }
 
-  int i;
-  sscanf(uri, "http://%s:%d%s", hostname, &i, path);
-  sscanf(uri, "http://%[^/]%s", hostname, path);
-
-  
+  if (strstr(temp, ":")) {
+    if (sscanf(temp, "%[^:]:%[0-9]", hostname, port) != 2) {
+      return 0;
+    }
+  }
+  else {
+    memcpy(hostname, temp, sizeof(temp));
+    port = "80";
+  }
+  return 1;
 }
 
 /*
