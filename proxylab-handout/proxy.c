@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "csapp.h"
+#include "cache.h"
 /* Recommended max cache and object sizes */
 #define MAX_CACHE_SIZE 1049000
 #define MAX_OBJECT_SIZE 102400
@@ -32,7 +33,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
   signal(SIGPIPE, SIG_IGN);
-
+  init_cache();
   listenfd = Open_listenfd(argv[1]);
   while (1) {
     printf("listening..\n");
@@ -44,6 +45,9 @@ int main(int argc, char **argv) {
     printf("Accepted connection from (%s, %s)\n", hostname, port);
     Pthread_create(&tid, NULL, thread, connfd);
   }
+  Close(listenfd);
+  free_cache();
+  return 0;
 }
 /* Thread routine */
 void *thread(void *vargp) {
@@ -77,7 +81,10 @@ void doit(int client_fd) {
                 "Proxy Server does not implement this method");
     return;
   }
-
+  int ret = read_cache(uri, client_fd);
+  if (ret == 1) {
+    return;
+  }
   // parse uri then open a clientfd
 
   parse_uri(uri, hostname, path, &port);
@@ -97,11 +104,19 @@ void doit(int client_fd) {
 
   Rio_writen(endserver_fd, newreq,
              strlen(newreq));  // send client header to real server
-  int n;
-  while ((n = Rio_readlineb(&to_endserver, buf,
-                            MAXLINE))) {  // real server response to buf
+  int n, size = 0;
+  char data[MAX_OBJECT_SIZE];
+  while ((n = Rio_readlineb(&to_endserver, buf, MAXLINE))) {  // real server response to buf
     // printf("proxy received %d bytes,then send\n",n);
+    if (size <= MAX_OBJECT_SIZE) {
+      memcpy(data + size, buf, n);
+      size += n;
+    }
     Rio_writen(client_fd, buf, n);  // real server response to real client
+  }
+  printf("size %d", size);
+  if (size <= MAX_OBJECT_SIZE) {
+    write_cache(uri, data, size);
   }
   Close(endserver_fd);
 }
